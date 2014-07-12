@@ -56,8 +56,37 @@
 (defn new-board
   "Create a new board where one move is made."
   [board from to]
-  (let [new-place (if (= from [5 5]) :throne :empty)]
-    (assoc-in (assoc-in board to :white) from new-place)))
+  (let [new-place (if (= from [5 5]) :throne :empty)
+        moved (get-in board from)]
+    (assoc-in (assoc-in board to moved) from new-place)))
+
+(defn check-kill
+  "Check one single postion and return updated board."
+  [board [x y :as pos] enemies]
+  (let [piece (get-in board pos)
+        checkpos [(get-in board [x (dec y)])
+                  (get-in board [x (inc y)])
+                  (get-in board [(dec x) y])
+                  (get-in board [(inc x) y])]
+        truecount (count ((group-by #(if (some #{%} enemies) true false) checkpos) true))]
+    (if (and (= piece :king) (>= truecount 4))
+      (new-board board pos pos)     ;kill position
+      (if (>= truecount 2)
+        (new-board board pos pos) ;kill position
+        board))))
+
+(defn check-kills
+  "Check a moved stone for kills and remove killed enemies. Returns checked board."
+  [board [x y :as newpos]]
+  (let [moved (get-in board newpos)]
+    (if (= moved :black)
+      (def enemies [:castle :throne :black])  ;the enemies of the dying
+      (def enemies [:castle :throne :king :white]))
+    (let [up (check-kill board [x (dec y)] enemies)
+          right (check-kill up [(inc x) y] enemies)
+          down (check-kill right [x (inc y)] enemies)
+          left (check-kill down [(dec x) y] enemies)]
+      left)))
 
 (defn move
   "Move a figure on a given board. (move board player from-coord to-coord)"
@@ -66,12 +95,14 @@
     (if (valid-move from-coord to-coord piece board)
       (case player
         :white-player (if (or (= piece :white) (= piece :king))
-                        (new-board board from-coord to-coord)
+                        (let [after-move (new-board board from-coord to-coord)]
+                          (check-kills after-move to-coord))
                         :wrong-piece)
         :black-player (if (= piece :black)
-                        (new-board board from-coord to-coord)
+                        (let [after-move (new-board board from-coord to-coord)]
+                          (check-kills after-move to-coord))
                         :wrong-piece)
         :not-a-player)
       :move-forbidden)))
 
-
+;TODO: Add Win-Conditions, add loop

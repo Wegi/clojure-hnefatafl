@@ -18,3 +18,8 @@
   (move (init-board) :white-player [5 5] [8 5]) => :move-forbidden
   (move (init-board) :black-player [5 1] [11 1]) => :move-forbidden)
 
+(fact "Test kill condition"
+  (let [a (move (init-board) :black-player [5 1] [5 2])
+        b (move a :black-player [10 3] [6 3])]
+    (get-in b [5 3]))
+  => :empty)
