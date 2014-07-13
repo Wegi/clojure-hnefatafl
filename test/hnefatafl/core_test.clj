@@ -23,3 +23,8 @@
         b (move a :black-player [10 3] [6 3])]
     (get-in b [5 3]))
   => :empty)
+
+(fact "Test win-condition"
+  (won? (assoc-in (init-board) [5 5] :throne)) => :black-player
+  (won? (assoc-in (init-board) [0 0] :king)) => :white-player
+  (won? (init-board)) => nil)

@@ -75,6 +75,21 @@
         (new-board board pos pos) ;kill position
         board))))
 
+(defn won?
+  "Test whether a player has won. Returns the winning player or nil if nobody wins."
+  [board]
+  (let [castles (set [(get-in board [0 0])
+                      (get-in board [0 10])
+                      (get-in board [10 0])
+                      (get-in board [10 10])])
+        lines (map #(set %) board)
+        all-figures (apply clojure.set/union lines)]
+    (if (contains? castles :king)
+      :white-player
+      (if (not (contains? all-figures :king))
+        :black-player
+        nil))))
+
 (defn check-kills
   "Check a moved stone for kills and remove killed enemies. Returns checked board."
   [board [x y :as newpos]]
