@@ -1,10 +1,7 @@
 (ns hnefatafl.core
-  (:gen-class))
-
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
+  (:gen-class)
+  (:require [clojure.string])
+  (:require [clojure.set]))
 
 (defn init-board
   "Initialize the board with the start configuration."
@@ -29,11 +26,19 @@
         (= field :throne)
         (= field :castle))))
 
+(defn my-range
+  "Range Function which automatically applies steps of 1 or -1.
+Start exclusive goal inclusive."
+  [start goal]
+  (if (> 0 (- start goal))
+    (range (inc start) (inc goal) 1)
+    (range (dec start) (dec goal) -1)))
+
 (defn way-clear?
   "Test if you can move a certain way."
   [board [f-x f-y :as from] [t-x t-y :as to]]
-  (let [hor (map (fn [a] [a f-y]) (range (inc f-x) (inc t-x)))
-        vert (map (fn [a] [f-x a]) (range (inc f-y) (inc t-y)))
+  (let [hor (map (fn [a] [a f-y]) (my-range f-x t-x))
+        vert (map (fn [a] [f-x a]) (my-range f-y t-y))
         hormap (map (partial field-free? board) hor)
         vertmap (map (partial field-free? board) vert)]
     (not (or (some false? hormap) (some false? vertmap)))))
@@ -62,8 +67,11 @@
 
 (defn check-kill
   "Check one single postion and return updated board."
-  [board [x y :as pos] enemies]
+  [board [x y :as pos]]
   (let [piece (get-in board pos)
+        enemies (if (= piece :black)
+                  [:castle :throne :king :white]
+                  [:castle :throne :black])
         checkpos [(get-in board [x (dec y)])
                   (get-in board [x (inc y)])
                   (get-in board [(dec x) y])
@@ -71,7 +79,7 @@
         truecount (count ((group-by #(if (some #{%} enemies) true false) checkpos) true))]
     (if (and (= piece :king) (>= truecount 4))
       (new-board board pos pos)     ;kill position
-      (if (>= truecount 2)
+      (if (and (not (= piece :king)) (>= truecount 2))
         (new-board board pos pos) ;kill position
         board))))
 
@@ -93,15 +101,11 @@
 (defn check-kills
   "Check a moved stone for kills and remove killed enemies. Returns checked board."
   [board [x y :as newpos]]
-  (let [moved (get-in board newpos)]
-    (if (= moved :black)
-      (def enemies [:castle :throne :black])  ;the enemies of the dying
-      (def enemies [:castle :throne :king :white]))
-    (let [up (check-kill board [x (dec y)] enemies)
-          right (check-kill up [(inc x) y] enemies)
-          down (check-kill right [x (inc y)] enemies)
-          left (check-kill down [(dec x) y] enemies)]
-      left)))
+  (let [up (check-kill board [x (dec y)])
+        right (check-kill up [(inc x) y])
+        down (check-kill right [x (inc y)])
+        left (check-kill down [(dec x) y])]
+    left))
 
 (defn move
   "Move a figure on a given board. (move board player from-coord to-coord)"
@@ -120,4 +124,37 @@
         :not-a-player)
       :move-forbidden)))
 
-;TODO: Add Win-Conditions, add loop
+(defn transpose [m]
+  (apply mapv vector m))
+
+(defn next-player [current]
+  (if (= current :black-player)
+    :white-player
+    :black-player))
+
+(defn -main
+  "Main Loop"
+  [& args]
+  (loop [won false
+         player :black-player
+         board (init-board)]
+    (if won
+      (println "tfl> " won " won the Game")
+      (do
+        (doall (map println (transpose board)))
+        (println "<------------------------------>")
+        (println "tfl> " player " make your move ([xfrom yfrom] [xto yto])")
+        (let [move-input (read-line)
+              split (clojure.string/split move-input #" ")
+              from [(read-string (split 0)) (read-string (split 1))]
+              to [(read-string (split 2)) (read-string (split 3))]
+              result (move board player from to)]
+          (println split)
+          (if (contains? #{:wrong-piece :move-forbidden :not-a-player} result)
+            (do
+              (println "tfl> Error: " result)
+              (recur false player board))
+            ;; Move was made correctly
+            (recur (won? result) (next-player player) result)))))))
+
+;;TODO: Eigene Leute schlagen, König bewegt sich über alles hinweg
