@@ -63,8 +63,9 @@ Start exclusive goal inclusive."
   "Create a new board where one move is made."
   [board from to]
   (let [new-place (if (= from [5 5]) :throne :empty)
+        new-place2 (if (contains? #{[0 0] [10 0] [0 10] [10 10]} from) :castle :empty)
         moved (get-in board from)]
-    (assoc-in (assoc-in board to moved) from new-place)))
+    (assoc-in (assoc-in board to moved) from new-place2)))
 
 (defn check-kill
   "Check one single postion and return updated board."
@@ -171,4 +172,4 @@ Start exclusive goal inclusive."
             ;; Move was made correctly
             (recur (won? result) (next-player player) result)))))))
 
-;;TODO: Castle kann geschlagen werden, Rand Schlagen
+;;TODO: Rand Schlagen
