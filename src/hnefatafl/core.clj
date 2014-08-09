@@ -1,7 +1,8 @@
 (ns hnefatafl.core
   (:gen-class)
-  (:require [clojure.string])
-  (:require [clojure.set]))
+  (:require [clojure.string]
+            [clojure.set]
+            [clansi.core :as clansi]))
 
 (defn init-board
   "Initialize the board with the start configuration."
@@ -132,6 +133,19 @@ Start exclusive goal inclusive."
     :white-player
     :black-player))
 
+(defn convert-piece [piece]
+  (case piece
+    :black (clansi/style "B"  :blue :underline)
+    :white (clansi/style "W" :white :underline)
+    :king  (clansi/style "K" :magenta :underline)
+    :castle (clansi/style "C" :green :underline)
+    :throne (clansi/style "T" :red :underline)
+    :empty "_"
+    "??"))
+
+(defn prepare-print [board]
+  (mapv #(mapv convert-piece %) (transpose board)))
+
 (defn -main
   "Main Loop"
   [& args]
@@ -141,9 +155,9 @@ Start exclusive goal inclusive."
     (if won
       (println "tfl> " won " won the Game")
       (do
-        (doall (map println (transpose board)))
+        (doall (map println (prepare-print board)))
         (println "<------------------------------>")
-        (println "tfl> " player " make your move ([xfrom yfrom] [xto yto])")
+        (println "tfl> " player " make your move (xfrom yfrom xto yto)")
         (let [move-input (read-line)
               split (clojure.string/split move-input #" ")
               from [(read-string (split 0)) (read-string (split 1))]
@@ -157,4 +171,4 @@ Start exclusive goal inclusive."
             ;; Move was made correctly
             (recur (won? result) (next-player player) result)))))))
 
-;;TODO: Eigene Leute schlagen, König bewegt sich über alles hinweg
+;;TODO: Castle kann geschlagen werden, Rand Schlagen

@@ -4,7 +4,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [midje "1.6.2"]]
+                 [midje "1.6.2"]
+                 [org.clojars.pjlegato/clansi "1.3.0"]]
   :main ^:skip-aot hnefatafl.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
