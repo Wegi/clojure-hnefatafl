@@ -22,11 +22,14 @@
 (fact "Test kill condition"
   (let [a (move (init-board) :black-player [5 1] [5 2])
         b (move a :black-player [10 3] [6 3])]
-    (get-in b [5 3])) => :empty
-  (get-in (move (init-board) :black-player [5 1] [6 1]) [6 0]) => :black
+    (get-in b [5 3])) => :white
+    (get-in (move (init-board) :black-player [5 1] [6 1]) [6 0]) => :black
   (let [a (move (init-board) :black-player [3 0] [1 0])
         b (move a :black-player [0 3] [0 1])]
-    (get-in b [0 0])) => :castle)
+    (get-in b [0 0])) => :castle
+    (let [a (move (init-board) :black-player [4 0] [4 3])
+          b (move a :black-player [6 0] [6 3])]
+      (get-in b [5 3])) => :empty)
 
 (fact "Test win-condition"
   (won? (assoc-in (init-board) [5 5] :throne)) => :black-player

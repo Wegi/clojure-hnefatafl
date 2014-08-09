@@ -69,19 +69,22 @@ Start exclusive goal inclusive."
 
 (defn check-kill
   "Check one single postion and return updated board."
-  [board [x y :as pos]]
+  [board [ax ay :as from] [x y :as pos]]
   (let [piece (get-in board pos)
         enemies (if (= piece :black)
                   [:castle :throne :king :white]
                   [:castle :throne :black])
+        checkx (- x (- ax x))
+        checky (- y (- ay y))  ;get the opposing stone position
         checkpos [(get-in board [x (dec y)])
                   (get-in board [x (inc y)])
                   (get-in board [(dec x) y])
                   (get-in board [(inc x) y])]
+        opposing-enemy (get-in board [checkx checky])
         truecount (count ((group-by #(if (some #{%} enemies) true false) checkpos) true))]
     (if (and (= piece :king) (>= truecount 4))
       (new-board board pos pos)     ;kill position
-      (if (and (not (= piece :king)) (>= truecount 2))
+      (if (and (not (= piece :king)) (some #{opposing-enemy} enemies))
         (new-board board pos pos) ;kill position
         board))))
 
@@ -103,10 +106,10 @@ Start exclusive goal inclusive."
 (defn check-kills
   "Check a moved stone for kills and remove killed enemies. Returns checked board."
   [board [x y :as newpos]]
-  (let [up (check-kill board [x (dec y)])
-        right (check-kill up [(inc x) y])
-        down (check-kill right [x (inc y)])
-        left (check-kill down [(dec x) y])]
+  (let [up (check-kill board [x y] [x (dec y)])
+        right (check-kill up [x y] [(inc x) y])
+        down (check-kill right [x y] [x (inc y)])
+        left (check-kill down [x y] [(dec x) y])]
     left))
 
 (defn move
@@ -164,7 +167,6 @@ Start exclusive goal inclusive."
               from [(read-string (split 0)) (read-string (split 1))]
               to [(read-string (split 2)) (read-string (split 3))]
               result (move board player from to)]
-          (println split)
           (if (contains? #{:wrong-piece :move-forbidden :not-a-player} result)
             (do
               (println "tfl> Error: " result)
@@ -172,4 +174,5 @@ Start exclusive goal inclusive."
             ;; Move was made correctly
             (recur (won? result) (next-player player) result)))))))
 
-;;TODO: Rand Schlagen
+;;TODO: Fetlar Hnefatafl.Nur gegenüberliegende Schlagen, umschlossene
+;;figuren schlagen, abwechselndes muster
