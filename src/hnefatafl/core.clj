@@ -174,5 +174,6 @@ Start exclusive goal inclusive."
             ;; Move was made correctly
             (recur (won? result) (next-player player) result)))))))
 
-;;TODO: Fetlar Hnefatafl.Nur gegenüberliegende Schlagen, umschlossene
-;;figuren schlagen, abwechselndes muster
+;; TODO: Fetlar Hnefatafl.
+;; http://www.fetlar.org/assets/files/hnefatafl/rules2013visual.pdf
+;; Maybe implement automatic draw
