@@ -14,7 +14,9 @@ Download the game from https://github.com/Wegi/clojure-hnefatafl/releases/tag/v0
 ## Usage
 
 To run the game you need to install `leiningen`.
-Change inside the game folder and run the `lein run` command via your terminal.
+Change inside the game folder and run the `lein run` command via your terminal
+if you want to run the graphical version.  
+Start the Terminal version with `lein run console`.  
 You can also create a *jar with `lein uberjar`.
 
 

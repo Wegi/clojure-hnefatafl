@@ -62,15 +62,19 @@ Start exclusive goal inclusive."
 (defn new-board
   "Create a new board where one move is made."
   [board from to]
-  (let [new-place (if (= from [5 5]) :throne :empty)
-        new-place2 (if (contains? #{[0 0] [10 0] [0 10] [10 10]} from) :castle :empty)
+  (let [new-place (if (= from [5 5])
+                    :throne              
+                    (if (contains? #{[0 0] [10 0] [0 10] [10 10]} from)
+                      :castle
+                      :empty))
         moved (get-in board from)]
-    (assoc-in (assoc-in board to moved) from new-place2)))
+    (assoc-in (assoc-in board to moved) from new-place)))
 
 (defn check-kill
   "Check one single postion and return updated board."
   [board [ax ay :as from] [x y :as pos]]
   (let [piece (get-in board pos)
+        attacker (get-in board from)
         enemies (if (= piece :black)
                   [:castle :throne :king :white]
                   [:castle :throne :black])
@@ -84,7 +88,7 @@ Start exclusive goal inclusive."
         truecount (count ((group-by #(if (some #{%} enemies) true false) checkpos) true))]
     (if (and (= piece :king) (>= truecount 4))
       (new-board board pos pos)     ;kill position
-      (if (and (not (= piece :king)) (some #{opposing-enemy} enemies))
+      (if (and (not (= piece :king)) (some #{opposing-enemy} enemies) (some #{attacker} enemies))
         (new-board board pos pos) ;kill position
         board))))
 
@@ -150,29 +154,7 @@ Start exclusive goal inclusive."
 (defn prepare-print [board]
   (mapv #(mapv convert-piece %) (transpose board)))
 
-(defn -main
-  "Main Loop"
-  [& args]
-  (loop [won false
-         player :black-player
-         board (init-board)]
-    (if won
-      (println "tfl> " won " won the Game")
-      (do
-        (doall (map println (prepare-print board)))
-        (println "<------------------------------>")
-        (println "tfl> " player " make your move (xfrom yfrom xto yto)")
-        (let [move-input (read-line)
-              split (clojure.string/split move-input #" ")
-              from [(read-string (split 0)) (read-string (split 1))]
-              to [(read-string (split 2)) (read-string (split 3))]
-              result (move board player from to)]
-          (if (contains? #{:wrong-piece :move-forbidden :not-a-player} result)
-            (do
-              (println "tfl> Error: " result)
-              (recur false player board))
-            ;; Move was made correctly
-            (recur (won? result) (next-player player) result)))))))
+
 
 ;; TODO: Fetlar Hnefatafl.
 ;; http://www.fetlar.org/assets/files/hnefatafl/rules2013visual.pdf
