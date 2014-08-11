@@ -9,6 +9,12 @@
 (def from (atom []))
 (def to (atom []))
 (def message (atom ":black-player it is your turn"))
+(def viking (atom nil))
+(def viking-white (atom nil))
+(def king (atom nil))
+(def tower (atom nil))
+(def grass (atom nil))
+(def throne (atom nil))
 
 (defn update []
   (if @won
@@ -33,17 +39,20 @@
   (q/background 0xaa)  ;set bg to light gray
   (dorun (for [x (range 11)
                y (range 11)
-               :let [piece (get-in @board [x y])]]
+               :let [piece (get-in @board [x y])
+                     xx (* x 50)
+                     yy (* y 50)]]
            (do
-             (q/stroke 0xff 0xff 0xff)
+             (q/image @grass xx yy)
              (cond
-                (= piece :black)  (q/fill 0x00 0x00 0x00)
-                (= piece :white)  (q/fill 0xff 0x99 0xff)
-                (= piece :king)   (q/fill 0xe8 0x34 0x25)
-                (= piece :castle) (q/fill 0x38 0xb4 0x8b)
-                (= piece :throne) (q/fill 0xed 0xd3 0x09)
-                (= piece :empty)  (q/fill 0xe3 0xe2 0xdd))
-             (q/rect (* x 50) (* y 50) 50 50))))
+                (= piece :black)  (q/image @viking xx yy)
+                (= piece :white)  (q/image @viking-white xx yy)
+                (= piece :king)   (q/image @king xx yy)
+                (= piece :castle) (q/image @tower xx yy)
+                (= piece :throne) (q/image @throne xx yy))
+             (q/stroke 0xff 0xff 0xff)
+             (q/no-fill)
+             (q/rect xx yy 50 50))))
   (q/fill 0x00)
   (q/text @message 20 560)
   (q/stroke 0xff 0xb2 0x25)  ;frame the chosen one
@@ -57,6 +66,17 @@
     (if (empty? @from)
       (reset! from coords)
       (reset! to coords))))
+
+(defn setup []
+  (q/smooth)
+  (q/no-stroke)
+  (q/frame-rate 60)
+  (reset! viking (q/load-image "resources/viking.png"))
+  (reset! viking-white (q/load-image "resources/viking-white.png"))
+  (reset! king (q/load-image "resources/king.png"))
+  (reset! tower (q/load-image "resources/tower.png"))
+  (reset! grass (q/load-image "resources/hay.jpg"))
+  (reset! throne (q/load-image "resources/throne.png")))
 
 (defn -main
   "Main Loop"
@@ -85,6 +105,6 @@
     (q/defsketch hnefatafl
       :title "Clojure Hnefatafl (Fetlar Edition)"
       :size [550 600]
-      :setup (fn [] (q/smooth) (q/no-stroke) (q/frame-rate 60))
+      :setup setup
       :draw (fn [] (update) (draw))
       :mouse-clicked mouse-pressed)))

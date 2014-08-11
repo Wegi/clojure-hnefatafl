@@ -1,4 +1,4 @@
-(defproject hnefatafl "0.1.0"
+(defproject hnefatafl "0.3.0"
   :description "A Fetlar Hnefatafl Game in Clojure"
   :url "github.com/wegi"
   :license {:name "Eclipse Public License"
