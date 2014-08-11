@@ -71,12 +71,12 @@
   (q/smooth)
   (q/no-stroke)
   (q/frame-rate 60)
-  (reset! viking (q/load-image "resources/viking.png"))
-  (reset! viking-white (q/load-image "resources/viking-white.png"))
-  (reset! king (q/load-image "resources/king.png"))
-  (reset! tower (q/load-image "resources/tower.png"))
-  (reset! grass (q/load-image "resources/hay.jpg"))
-  (reset! throne (q/load-image "resources/throne.png")))
+  (reset! viking (q/load-image (clojure.java.io/resource "viking.png")))
+  (reset! viking-white (q/load-image (clojure.java.io/resource "viking-white.png")))
+  (reset! king (q/load-image  (clojure.java.io/resource "king.png")))
+  (reset! tower (q/load-image (clojure.java.io/resource "tower.png")))
+  (reset! grass (q/load-image  (clojure.java.io/resource "hay.jpg")))
+  (reset! throne (q/load-image (clojure.java.io/resource "throne.png"))))
 
 (defn -main
   "Main Loop"
