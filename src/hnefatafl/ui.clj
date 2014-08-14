@@ -18,7 +18,10 @@
 
 (defn update []
   (if @won
-    (reset! message (str @won " won the game"))
+    (do
+      (if (= @won "tied")
+        (reset! message (str "The game is a tie"))
+        (reset! message (str @won " won the game"))))
     (do
       (if (empty? @from)
         (reset! message (str @player " chose the piece to move"))
@@ -34,6 +37,13 @@
                 (reset! won (won? @board))))
           (reset! from [])
           (reset! to []))))))
+
+(defn draw-button [x y xh yh text]
+  (q/fill 0xff)
+  (q/stroke 0x00)
+  (q/rect x y xh yh)     ;tie button
+  (q/fill 0x00)
+  (q/text text (+ x 25) (+ y 15)))
 
 (defn draw []
   (q/background 0xaa)  ;set bg to light gray
@@ -53,19 +63,34 @@
              (q/stroke 0xff 0xff 0xff)
              (q/no-fill)
              (q/rect xx yy 50 50))))
-  (q/fill 0x00)
-  (q/text @message 20 560)
+  (draw-button 400 560 100 20 "Tie Game")
+  (q/text @message 20 560)   ;write the game state
   (q/stroke 0xff 0xb2 0x25)  ;frame the chosen one
   (q/no-fill)
   (if-not (empty? @from)
     (q/rect (* (@from 0) 50) (* (@from 1) 50) 50 50))
   )
 
+(defn between-nums?
+  [right left num]
+  (if (and (<= right num) (<= num left))
+    true
+    false))
+
+(defn pressed-button? [x y]
+  (if (and (between-nums? 400 500 x) (between-nums? 560 580 y))
+    :button-tie
+    nil))
+
 (defn mouse-pressed []
   (let [coords [(quot (q/mouse-x) 50) (quot (q/mouse-y) 50)]]
-    (if (empty? @from)
+    (if (and (empty? @from) (< (coords 0) 11) (< (coords 1) 11))
       (reset! from coords)
-      (reset! to coords))))
+      (reset! to coords)))
+  (let [button (pressed-button? (q/mouse-x) (q/mouse-y))]
+    (case button
+      :button-tie (reset! won "tied")
+      :else)))
 
 (defn setup []
   (q/smooth)
