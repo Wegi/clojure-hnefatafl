@@ -4,9 +4,6 @@ A Clojure Implementation of the Fetlar Hnefatafl game.
 For the official Fetlar rules check out this link
 http://www.fetlar.org/assets/files/hnefatafl/rules2013visual.pdf
 
-**Note:** This is still an early experimental version, that only works inside the Terminal.
-If I have some free time I will release a version with graphical interface sooner or later.
-
 ## Installation
 
 Download the game from https://github.com/Wegi/clojure-hnefatafl/releases/tag/v0.1
